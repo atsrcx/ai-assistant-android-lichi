@@ -1,0 +1,6 @@
+{
+  "name": "Assistant",
+  "description": "AI Assistant for Android with smart voice, chat, device actions, and multimodal capabilities.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

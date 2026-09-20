@@ -519,7 +519,7 @@ fun ImageAttachmentBubble(
                         
                         val uri = androidx.core.content.FileProvider.getUriForFile(
                             context,
-                            "com.app.assistant.fileprovider",
+                            "${context.packageName}.fileprovider",
                             temp
                         )
                         val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
@@ -701,7 +701,7 @@ fun VideoAttachmentBubble(attachment: Attachment) {
                     
                     val uri = androidx.core.content.FileProvider.getUriForFile(
                         context,
-                        "com.app.assistant.fileprovider",
+                        "${context.packageName}.fileprovider",
                         temp
                     )
                     val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
@@ -764,7 +764,7 @@ fun DocumentAttachmentBubble(attachment: Attachment) {
                     
                     val uri = androidx.core.content.FileProvider.getUriForFile(
                         context,
-                        "com.app.assistant.fileprovider",
+                        "${context.packageName}.fileprovider",
                         temp
                     )
                     val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {

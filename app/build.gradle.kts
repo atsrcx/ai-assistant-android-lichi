@@ -1,21 +1,19 @@
-import java.util.Properties
-import java.io.FileInputStream
-
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.jetbrains.kotlin.serialization)
-    kotlin("kapt")
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.secrets)
 }
 
 android {
     namespace = "com.app.assistant"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.app.assistant"
+        applicationId = "com.aistudio.assistant.apidkv"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         val runNumber = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 0
         versionCode = 2 + runNumber
         versionName = if (runNumber > 0) "2.1.$runNumber" else "2.1"
@@ -24,27 +22,6 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-
-        // Read local.properties
-        val localProperties = Properties()
-        val localPropertiesFile = rootProject.file("local.properties")
-        if (localPropertiesFile.exists()) {
-            localProperties.load(FileInputStream(localPropertiesFile))
-        }
-
-        // Define BuildConfig fields for API keys
-        // Make sure YOUTUBE_API_KEY and GROQ_API_KEY exist in your local.properties
-        buildConfigField("String", "YOUTUBE_API_KEY",
-            "\"${localProperties.getProperty("YOUTUBE_API_KEY") ?: ""}\"" // Add quotes
-        )
-
-        buildConfigField("String", "GROQ_API_KEY",
-            "\"${localProperties.getProperty("GROQ_API_KEY") ?: ""}\"" // Add quotes
-        )
-
-        buildConfigField("String", "EDGE_TTS_SUBSCRIPTION_KEY",
-            "\"${localProperties.getProperty("EDGE_TTS_SUBSCRIPTION_KEY") ?: ""}\"" // Add quotes
-        )
     }
 
     val keystoreFilePath = System.getenv("KEYSTORE_FILE_PATH")
@@ -58,6 +35,12 @@ android {
             !keystoreKeyPassword.isNullOrEmpty()
 
     signingConfigs {
+        create("debugConfig") {
+            storeFile = file("${rootDir}/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
         if (hasSigningConfig) {
             create("release") {
                 storeFile = file(keystoreFilePath)
@@ -80,24 +63,16 @@ android {
             }
         }
         debug {
-            // BuildConfigFields from defaultConfig are inherited.
-            // Add specific debug configurations here if needed, for example:
-            // isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debugConfig")
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
         buildConfig = true // Ensure buildConfig is enabled
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.androidxComposeCompiler.get()
     }
     packaging {
         resources {
@@ -119,14 +94,6 @@ dependencies {
     implementation(libs.androidx.material3.window.size)
     implementation(libs.androidx.material3.adaptive.navigation.suite)
     implementation(libs.okhttp)
-    constraints {
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3") {
-            because("Kotlin 1.9.0 compatibility")
-        }
-        implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3") {
-            because("Kotlin 1.9.0 compatibility")
-        }
-    }
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.mlkit.translate)
     implementation(libs.mlkit.barcode.scanning)
@@ -136,7 +103,7 @@ dependencies {
     implementation(libs.coil.network.okhttp)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
     implementation(libs.play.services.location)
     implementation(libs.androidx.ui.test.android)
     implementation(libs.androidx.security.crypto)
@@ -162,10 +129,7 @@ dependencies {
     implementation(libs.androidx.camera.view)
 }
 
-configurations.all {
-    resolutionStrategy {
-        force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.6.3")
-    }
+secrets {
+    propertiesFileName = ".env"
+    defaultPropertiesFileName = ".env.example"
 }

@@ -253,6 +253,11 @@ class ScreenCaptureService : Service() {
         val mpManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         try {
             val projection = mpManager.getMediaProjection(resultCode, resultData)
+            if (projection == null) {
+                Log.e(TAG, "MediaProjection is null")
+                stopServiceInternal()
+                return
+            }
             mediaProjection = projection
 
             projection.registerCallback(object : MediaProjection.Callback() {
